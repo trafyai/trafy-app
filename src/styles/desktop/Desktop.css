@@ -1,0 +1,7 @@
+.app-desktop{
+    width: 250px;
+    height: 100vh;
+    background-color:var(--box-border) ;
+    position: sticky;
+    top: 0px;
+}

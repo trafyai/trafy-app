@@ -1,13 +1,11 @@
 import "@styles/globals.css";
 import Header from "@components/common/header/Header.jsx";
 import Footer from "@components/common/footer/Footer";
+import Desktop from "../components/desktop/Desktop";
 import imageO from "../app/opengraph-image.png";
 import { AuthContextProvider } from "@context/AuthContext";
-import { CourseContextProvider } from "@context/CourseContext";
 import { CartProvider } from "@context/CartContext";
-import Script from "next/script";
 import { GoogleAnalytics } from '@next/third-parties/google'
-
 
 export const metadata = {
   title: "trafy - Your Personalised AI mentor",
@@ -44,12 +42,18 @@ export default function RootLayout({ children }) {
 
         <AuthContextProvider>
           <CartProvider>
-            <main className="app">
+
+            <main>
               <Header />
-              {children}
-              <Footer />
+              <div style={{display:"flex",width:"100%"}}>
+                <div style={{width:"250px",position:"relative"}}><Desktop/></div>
+                {children}
+              </div>
+                
+              {/* <Footer /> */}
             </main>
             <GoogleAnalytics gaId="G-THWZDJH6WZ" />
+
           </CartProvider>
         </AuthContextProvider>
       </body>

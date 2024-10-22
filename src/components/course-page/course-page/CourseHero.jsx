@@ -182,7 +182,7 @@ import MasterClassEnquiryForm from '@components/common/auth/masterclass-form/mas
 import Enroll from "@components/common/enroll/Enroll";
 import { useRouter } from "next/navigation";
 import { UserAuth } from "@context/AuthContext";
-import { useCart } from "@context/CartContext";
+import { useCart } from '@context/CartContext';
 
 export default function CourseHero(props) {
     const [showShare, setShowShare] = useState(false);
