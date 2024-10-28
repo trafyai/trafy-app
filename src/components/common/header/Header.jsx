@@ -33,6 +33,8 @@ const Header = () => {
       window.removeEventListener("popstate", handlePopState);
     };
   }, []);
+
+  
   
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -86,16 +88,60 @@ const Header = () => {
     setHover(!hover);
   };
 
-  const handleLogOut = async () => {
-    try {
-      await logOut();
-      setHover(false);
-      router.push("/");
-      router.reload();
-    } catch (error) {
-      console.log(error);
+//   const handleLogOut = async () => {
+//     try {
+//         // Call the logout function
+//         await logOut();
+        
+//         // Optionally reset hover state or other UI elements
+//         setHover(false);
+
+//         // Make a request to invalidate the session cookie on the backend
+//         const response = await fetch('http://localhost:5000/api/createSessionCookie', {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//             body: JSON.stringify({ idToken: null }),  // Ensure your backend handles this case correctly
+//         });
+
+//         // Check if the response is OK
+//         if (!response.ok) {
+//             throw new Error('Failed to invalidate session cookie');
+//         }
+
+//         // Redirect to home page (choose either `router.push` or `router.reload`)
+//         router.push("/");
+//     } catch (error) {
+//         console.error('Error during logout:', error);
+//     }
+// };
+
+const handleLogOut = async () => {
+  try {
+    // Call the logout function
+    await logOut(); // Sign out the user
+
+    // Notify the backend to clear the session cookie
+    const response = await fetch('http://localhost:5000/api/clearSessionCookie', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ clearSession: true }), // Indicate the session should be cleared
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to clear session cookie');
     }
-  };
+
+    // Redirect to home page
+    router.push("/");
+  } catch (error) {
+    console.error('Error during logout:', error);
+  }
+};
+
 
   return (
     <div className="navbar">
@@ -124,7 +170,7 @@ const Header = () => {
               Masterclass
             </Link>
             <Link
-              href="https://blog.trafyai.com"
+              href=" http://localhost:3001"
               className="menu-resources"
               onClick={() => handleNavigation("https://blog.trafyai.com")}
             >
@@ -212,7 +258,7 @@ const Header = () => {
                   Masterclass
                 </Link>
                 <Link
-                  href="https://blog.trafyai.com"
+                  href="http://localhost:3001"
                   className="menu-resources"
                   onClick={() => handleNavigation("https://blog.trafyai.com")}
                 >

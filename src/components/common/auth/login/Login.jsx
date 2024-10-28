@@ -1,5 +1,5 @@
 'use client';
-import React, { useState , useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import '@styles/common/auth/login.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
@@ -10,6 +10,7 @@ import { ref, set } from 'firebase/database';
 import { auth, database } from '@firebase'; // Adjust this path based on your actual file structure
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
+import { getIdToken } from 'firebase/auth';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -18,15 +19,30 @@ const Login = () => {
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [generalError, setGeneralError] = useState('');
-    const [loading, setLoading] = useState(true); // Add loading state
+    const [loading, setLoading] = useState(true); // Loading state
+    const [loginCompleted, setLoginCompleted] = useState(false); // Track if login completed
 
     const router = useRouter();
+
+    // useEffect(() => {
+    //     // Check if user is already logged in
+    //     const unsubscribe = onAuthStateChanged(auth, (user) => {
+    //         if (user && loginCompleted) {
+    //             // Redirect if user is already logged in and login process is completed
+    //             router.back(); // Redirect to home or another page
+    //         } else {
+    //             setLoading(false); // Set loading to false when done
+    //         }
+    //     });
+
+    //     return () => unsubscribe(); // Cleanup subscription on unmount
+    // }, [router, loginCompleted]);
 
     useEffect(() => {
         // Check if user is already logged in
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Redirect if user is already logged in
+                // Redirect if user is already logged in and login process is completed
                 router.back(); // Redirect to home or another page
             } else {
                 setLoading(false); // Set loading to false when done
@@ -78,19 +94,38 @@ const Login = () => {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
+            const idtoken = await user.getIdToken();
+
             // Store user data in Firebase Realtime Database
-            const userRef = ref(database, 'usersData/' + user.uid);
-            await set(userRef, {
-                uid: user.uid,
-                email: user.email,
-                firstName: user.email.split('@')[0],
+            // const userRef = ref(database, 'usersData/' + user.uid);
+            // await set(userRef, {
+            //     uid: user.uid,
+            //     email: user.email,
+            //     firstName: user.email.split('@')[0],
+            // });
+
+            const response = await fetch('http://localhost:5000/api/createSessionCookie', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ idToken: idtoken }),
             });
+    
+            const data = await response.json();
+    
+            if (data.success) {
+                // Store the session cookie in the browser
+                document.cookie = `authToken=${data.sessionCookie}; path=/; domain=.yourdomain.com`;
+                
+                // Set loginCompleted to true
+                setLoginCompleted(true); // Indicate login process is completed
 
-            document.cookie = `authToken=${userCredential.user.uid}; path=/; domain=.trafyai.com`;
-            document.cookie = `authToken=${userCredential.user.uid}; path=/; domain=.blog.trafyai.com`;
-        
-
-            // router.push('/');
+                // You can now redirect or perform other actions
+                router.push('/');
+            } else {
+                setGeneralError('Failed to create a session. Please try again.');
+            }
 
         } catch (error) {
             if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
@@ -111,19 +146,38 @@ const Login = () => {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
 
+            const idtoken = await user.getIdToken();
+
             // Store user data in Firebase Realtime Database
-            const userRef = ref(database, 'usersData/' + user.uid);
-            await set(userRef, {
-                uid: user.uid,
-                email: user.email,
-                firstName: user.email.split('@')[0],
+            // const userRef = ref(database, 'usersData/' + user.uid);
+            // await set(userRef, {
+            //     uid: user.uid,
+            //     email: user.email,
+            //     firstName: user.email.split('@')[0],
+            // });
+
+            const response = await fetch('http://localhost:5000/api/createSessionCookie', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ idToken: idtoken }),
             });
+    
+            const data = await response.json();
+    
+            if (data.success) {
+                // Store the session cookie in the browser
+                document.cookie = `authToken=${data.sessionCookie}; path=/; domain=.yourdomain.com`;
 
-            document.cookie = `authToken=${userCredential.user.uid}; path=/; domain=.trafyai.com`;
-            document.cookie = `authToken=${userCredential.user.uid}; path=/; domain=.blog.trafyai.com`;
+                // Set loginCompleted to true
+                setLoginCompleted(true); // Indicate login process is completed
 
-
-            // router.back();
+                // You can now redirect or perform other actions
+                router.push('/');
+            } else {
+                setGeneralError('Failed to create a session. Please try again.');
+            }
 
         } catch (err) {
             if (err.code === 'auth/cancelled-popup-request') {
@@ -133,6 +187,7 @@ const Login = () => {
             }
         }
     };
+
 
 
     return (

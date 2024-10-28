@@ -94,7 +94,6 @@
   font-weight: 500;
   background-color: var(--trafy-blue);
   color: var(--trafy-white);
-  height:42px;
 }
 .menu-signup:hover {
   color: var(--trafy-blue);
